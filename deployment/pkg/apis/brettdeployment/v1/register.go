@@ -17,7 +17,9 @@ var SchemeGroupVersion = schema.GroupVersion{
 
 // create a SchemeBuilder which uses functions to add types to
 // the scheme
-var AddToScheme = runtime.NewSchemeBuilder(addKnownTypes).AddToScheme
+//var SchemaBuilder = &(runtime.NewSchemeBuilder(addKnownTypes))
+//var AddToScheme = SchemeBuilder
+var AddToScheme = runtime.NewSchemeBuilder(addKnownTypes).AddToScheme  // This requires go version >= 1.10.2
 
 func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()

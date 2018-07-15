@@ -1,38 +1,37 @@
 package v1
 
 import (
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/bwarminski/brett-custom-resource/deployment/pkg/apis/brettdeployment"
 )
 
-// GroupVersion is the identifier for the API which includes
-// the name of the group and the version of the API
-var SchemeGroupVersion = schema.GroupVersion{
-	Group:   brettdeployment.GroupName,
-	Version: "v1",
+// SchemeGroupVersion is group version used to register these objects
+var SchemeGroupVersion = schema.GroupVersion{Group: brettdeployment.GroupName, Version: "v1"}
+
+// Kind takes an unqualified kind and returns back a Group qualified GroupKind
+func Kind(kind string) schema.GroupKind {
+	return SchemeGroupVersion.WithKind(kind).GroupKind()
 }
 
-// create a SchemeBuilder which uses functions to add types to
-// the scheme
-var AddToScheme = runtime.NewSchemeBuilder(addKnownTypes).AddToScheme
-
+// Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
-// addKnownTypes adds our types to the API scheme by registering
-// MyResource and MyResourceList
+var (
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	AddToScheme   = SchemeBuilder.AddToScheme
+)
+
+// Adds the list of known types to Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
-	scheme.AddKnownTypes(
-		SchemeGroupVersion,
+	scheme.AddKnownTypes(SchemeGroupVersion,
 		&BrettDeployment{},
 		&BrettDeploymentList{},
 	)
-
-	// register the type in the scheme
-	meta_v1.AddToGroupVersion(scheme, SchemeGroupVersion)
+	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }

@@ -1,3 +1,3 @@
-package brettdeployment
+package demo
 
 const GroupName = "bwarminski.com"

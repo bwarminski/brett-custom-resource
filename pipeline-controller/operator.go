@@ -7,6 +7,9 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/cache"
 	"github.com/bwarminski/brett-custom-resource/pkg/apis/demo/v1"
+	"github.com/deckarep/golang-set"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 // This is the main business logic of the controller
@@ -100,7 +103,63 @@ func (c *Controller) syncDeletingPipeline(pipeline *v1.Pipeline) error {
 
 }
 
-func (c *Controller) assertInputsInitializedLabelled(pipeline *v1.Pipeline) (*v1.Pipeline, bool, error) {
+func (c *Controller) assertInputsLabelled(pipeline *v1.Pipeline) (*v1.Pipeline, bool, error) {
 	ok := true
-	pipeline.Spec.In
+
+	desiredInputs := mapset.NewThreadUnsafeSet()
+	currentInputs := mapset.NewThreadUnsafeSet()
+
+	selector, err := labels.Parse(InputLabelPrefix+pipeline.Name+"= true" )
+	if err != nil {
+		return pipeline, false, err
+	}
+
+	var inputs []v1.Input
+	externalWatchers, err := c.externalWatchersLister.ExternalWatchers(pipeline.Namespace).List(selector)
+	if err != nil {
+		return pipeline, false, err
+	}
+
+	for _, v := range pipeline.Spec.Inputs {
+		desiredInputs.Add(v)
+	}
+
+	for _, input := range externalWatchers {
+		inputs = append(inputs, input)
+		currentInputs.Add("externalwatcher."+input.Name)
+	}
+
+
 }
+
+//func (c *Controller) updateChildren(deployment *v1.BrettDeployment) (*v1.BrettDeployment, error) {
+//	actualChildren := mapset.NewThreadUnsafeSet()
+//	currentChildren := mapset.NewThreadUnsafeSet()
+//	childrenList, err := c.deploymentClient.BwarminskiV1().BrettDeployments(deployment.Namespace).List(metav1.ListOptions{
+//		LabelSelector: fmt.Sprintf(DeploymentParentFmt, deployment.Name ),
+//	})
+//	if err != nil {
+//		return deployment, nil
+//	}
+//	for _, child := range childrenList.Items {
+//		actualChildren.Add(child.Name)
+//	}
+//
+//	for _, child := range deployment.Status.Children {
+//		currentChildren.Add(child)
+//	}
+//
+//	if !actualChildren.Equal(currentChildren) {
+//		var newChildren []string
+//		for child := range currentChildren.Iter() {
+//			newChildren = append(newChildren, child.(string))
+//		}
+//		deploymentCopy := deployment.DeepCopy()
+//		deploymentCopy.Status.Children = newChildren
+//		glog.Info("Updating children")
+//		return c.deploymentClient.BwarminskiV1().BrettDeployments(deployment.Namespace).Update(deploymentCopy)
+//	}
+//
+//	glog.Info("Children are in sync")
+//	return deployment, nil
+//}

@@ -71,6 +71,14 @@ type ExternalWatcherStatus struct {
 	Outputs map[string]string  `json:"outputs"`
 }
 
+func (w *ExternalWatcher) Initialized() bool {
+	return w.Status.Initialized
+}
+
+func (w *ExternalWatcher) Outputs() map[string]string {
+	return w.Status.Outputs
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type ExternalWatcherList struct {
@@ -78,4 +86,9 @@ type ExternalWatcherList struct {
 	meta_v1.ListMeta `json:"metadata"`
 
 	Items []Pipeline `json:"items"`
+}
+
+type Input interface {
+	Initialized() bool
+	Outputs() map[string]string
 }

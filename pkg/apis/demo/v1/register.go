@@ -5,7 +5,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/bwarminski/brett-custom-resource/deployment/pkg/apis/brettdeployment"
 	"github.com/bwarminski/brett-custom-resource/pkg/apis/demo"
 )
 
@@ -33,7 +32,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Pipeline{},
 		&PipelineList{},
 		&ExternalWatcher{},
-		&ExternalWatcherList{}
+		&ExternalWatcherList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
